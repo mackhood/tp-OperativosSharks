@@ -1,0 +1,1197 @@
+ SESIÓN NÚMERO 1
+=================
+chmod(), fchmod() - modifica los permisos de acceso a un fichero
+     #include <sys/stat.h>
+     int chmod(const char *path, mode_t modo);
+     int fchmod(int fildes, mode_t modo);
+
+chown(), fchown(), lchown() - cambia el propietario y el grupo de un fichero
+     #include <unistd.h>
+     int chown(const char *path, uid_t owner, gid_t group);
+     int lchown(const char *path, uid_t owner, gid_t group);
+     int fchown(int fildes, uid_t owner, gid_t group);
+     Opcional: owner->UID_NO_CHANGE    group->GID_NO_CHANGE
+
+link() - enlaza a un fichero
+     #include <unistd.h>
+     int link(const char *path_destino, const char *path_fuente);
+
+unlink() - elimina una entrada de directorio; borra un fichero
+     #include <unistd.h>
+     int unlink(const char *path);
+
+symlink() - hace un enlace simbólico a un fichero.
+     #include <unistd.h>
+     int symlink(const char *path_destino, const char *path_fuente);
+
+readlink() - lee el contenido de un enlace simbólico
+     #include <unistd.h>
+     int readlink(const char *path, char *buf, size_t bufsiz);
+     Devuelve el número de bytes ocupados en buf o -1.
+
+
+ SESIÓN NÚMERO 2
+=================
+open() - abre un fichero para leer o escribir
+     #include<fcntl.h>
+     int open(const char *path, int oflag, ... /* [mode_t mode] */ );
+     Devuelve un descriptor de fichero o -1.
+     oflag: O_RDONLY, O_WRONLY, O_RDWR, O_APPEND, O_CREAT, O_EXCL,
+	    O_NONBLOCK, O_TRUNC, ...
+
+creat() - crea un nuevo fichero o sobreescribe uno existente
+     #include <fcntl.h>
+     int creat(const char *path, mode_t mode);
+
+close() - cierra un descriptor de fichero
+      #include <unistd.h>
+      int close(int fildes);
+ 
+lseek() - mueve el puntero de lectura/escritura de fichero; buscar
+      #include <unistd.h>
+      off_t lseek(int fildes, off_t desplazamiento, int dOnde);
+      dOnde: entero, SEEK_SET, SEEK_CUR, SEEK_END.
+
+read() - lee de un fichero
+      #include <unistd.h>
+      ssize_t read(int fildes, void *buf, size_t nbyte);
+      Devuelve el número de bytes realmente leídos o 0 si se alcanzó el
+      final de fichero.
+
+write() - escribe en un fichero
+      #include <unistd.h>
+      ssize_t write(int fildes, const void *buf, size_t nbyte);
+      Devuelve el número de bytes realmente escritos.
+
+truncate() - trunca un fichero a una longitud especificada.
+      #include <unistd.h>
+      int ftruncate(int fildes, off_t longitud);
+      int truncate(const char *path, off_t longitud);
+
+lockf() - semáforos y bloqueo de registros en ficheros
+      #include <unistd.h>
+      int lockf(int fildes, int funciOn, off_t tamaNo);
+      funciOn: F_ULOCK, F_LOCK, F_TLOCK, F_TEST.
+      Si no se puede bloquear, con F_LOCK se duerme, con F_TLOCK da EACCESS.
+      tamaNo: relativo al punto actual. 0=hasta el final...
+
+mmap() - proyecta un fichero en memoria
+      #include <sys/mman.h>
+      void *mmap(void *addr, size_t longitud, int prot, int flags,
+                 int fildes, off_t desplazamiento);
+      Si addr es 0, se proyecta donde quiera el sistema operativo.
+      prot: PROT_READ, PROT_WRITE, PROT_EXEC, PROT_NONE.
+      flags: MAP_SHARED.
+      Devuelve un puntero a la zona de memoria donde se ha proyectado o,
+      la macro MAP_FAILED, si hubo error.
+      Se puede cerrar el descriptor de fichero después.
+ 
+munmap() - elimina una proyección de memoria
+      #include <sys/mman.h>
+      int munmap(void *addr, size_t longitud);
+
+stat(), fstat(), lstat() - obtiene el estado de un fichero
+      #include <sys/types.h>
+      #include <sys/stat.h>
+      int stat(const char *path, struct stat *buf);
+      int fstat(int fildes, struct stat *buf);
+      int lstat(const char *path, struct stat *buf);
+      lstat() obtiene la información de un enlace simbólico mientras
+      que stat() y fstat() obtienen la información del objetivo del enlace.
+      Miembros de la estructura stat:
+      dev_t    st_dev;       /* ID del dispositivo que contiene la */
+                             /* entrada de directorio para este fichero */
+      ino_t    st_ino;       /* Número de inodo */
+      ushort   st_fstype;    /* Tipo de sistema de ficheros en */
+                             /* que se encuentra el fichero; véase sysfs(2) */
+      ushort   st_mode;      /* Tipo de fichero, atributos y */
+                             /* resumen del control de acceso */
+      ushort   st_basemode   /* Bits de permisos (véase chmod(1)) */
+      ushort   st_nlink;     /* Número de enlaces */
+      uid_t    st_uid;       /* ID de usuario del propietario del fichero */
+      gid_t    st_gid;       /* ID de grupo del grupo del fichero */
+      dev_t    st_rdev;      /* ID del dispositivo; esta entrada está */
+                             /* definida solamente para ficheros especiales */
+                             /* de tipo carácter o bloque */
+      off_t    st_size;      /* Tamaño del fichero (en bytes) */
+      time_t   st_atime;     /* Fecha del último acceso */
+      time_t   st_mtime;     /* Fecha de la última modificación */
+      time_t   st_ctime;     /* Fecha del último cambio de estado */
+                             /* del fichero */
+                             /* Medidas en segundos desde las */
+                             /* 00:00:00 GMT, 1 de Enero de 1970 */
+      long     st_blksize;   /* Tamaño del bloque del sistema de ficheros */
+      Al miembro st_mode se le puede aplicar las macros S_ISDIR(),
+      S_ISCHR(), S_ISBLK(), S_ISREG(), S_ISFIFO() o S_ISLNK() para
+      comprobar si el fichero es un directorio, un fichero especial de
+      caracteres, uno de bloques, un fichero normal, uno fifo o un
+      enlace simbólico.
+
+access() - determina la accesibilidad de un fichero
+      #include <unistd.h>
+      int access(char *path, int modo_de_acceso);
+      modo_de_acceso: R_OK, W_OK, X_OK, F_OK (existencia).
+      Devuelve 0 si hay acceso, -1 si no lo hay.
+
+rename() - cambia el nombre de un fichero
+      #include <stdio.h>
+      int rename (const char *origen, const char *destino);
+
+mkdir() - crea un directorio
+      #include <sys/stat.h>
+      int mkdir(const char *path, modo_t modo);
+
+rmdir() - elimina un directorio
+      #include <unistd.h>
+      int rmdir(const char *path);
+
+chdir(), fchdir() - cambia el directorio de trabajo
+      #include <unistd.h>
+      int chdir(const char *path);
+      int fchdir(int fildes);
+
+chroot() - cambia el directorio raíz
+      include <unistd.h>
+      int chroot(const char *path);
+
+
+getdirentries() - obtiene entradas de directorio en un formato inde-
+                  pendiente del sistema de ficheros
+      #include <ndir.h>
+      int getdirentries(int fildes, struct direct *buf, size_t nbytes,
+                        off_t *basep);
+      nbytes es el tamaño de la memoria reservada en buf.
+      nbytes tiene que ser mayor o igual que el tamaño de bloque del fichero.
+      La estructura de tamaño variable direct consta de los sigtes. miembros:
+           unsigned long  d_fileno; /* inodo aprox. */
+           unsigned short d_reclen; /* longitud de la estructura */
+           unsigned short d_namlen; /* longitud del nombre */
+           char           d_name[MAXNAMLEN + 1];  /* nombre del fichero */
+      Se devuelve el número de bytes escritos, 0 si se acabó, -1 error.
+      En basep, se devuelve el despl. de fichero antes de la llamada.
+
+
+ SESIÓN NÚMERO 4
+=================
+fork() - crea un nuevo proceso
+      #include <unistd.h>
+      pid_t fork(void);
+      Devuelve 0 al proceso hijo y el pid del hijo al proceso padre.
+      -1, si hay error.
+
+getpid(), getppid() obtiene el ID del proceso y del padre del proceso.
+      #include <unistd.h>
+      pid_t getpid(void);
+      pid_t getppid(void);
+
+execl(), execle(), execlp(), execv(), execve(), execvp() - ejecuta un
+      fichero
+      #include <unistd.h>
+      extern char **environ;
+      int execl(const char *path, const char *arg0, ...
+                /*  [const char *arg1, ..., const char *argn,]
+                    (char *)0 */);
+      int execle(const char *path, const char *arg0, ...
+                 /*  [const char *arg1, ..., const char *argn,]
+                  *  (char *)0,
+                  *  char * const envp[] */);
+      int execlp(const char *file, const char *arg0, ...
+                 /*  [const char *arg1, ..., const char *argn,]
+                  *  (char *)0 */);
+      int execv(const char *path, char * const argv[]);
+      int execve(const char *path, char * const argv[], char * const envp[]);
+      int execvp(const char *file, char * const argv[]);
+      Las llamadas que acaban en "p" buscan el fichero en el PATH.
+      Si la llamada tiene éxito, no se devuelve nada.
+
+wait(), waitpid() - espera a que un proceso hijo acabe o se pare
+      #include <sys/types.h>   OH #include <sys/wait.h>
+      pid_t wait(int *stat_loc);
+      pid_t waitpid(pid_t pid, int *stat_loc, int options);
+      Valor de pid: -1, todos; >0, el de PID especificado,
+                    0, los del grupo; <-1, a los del grupo |pid|.
+      Macros sobre stat_loc:
+          WIFEXITED() - Verdad si acabó normalmente. 
+          WIFSTOPPED() - Verdad si se paró.
+          WIFSIGNALED() - Verdad si acabó por una señal.
+          WEXITSTATUS() - Código retorno.  
+          WTERMSIG() - Señal por la que acabó.
+          WSTOPSIG() - Señal por la que se paró.
+          WIFCONTINUED() - Verdad si continuó.
+      Opciones: WNOHANG - no bloqueante.
+
+times() - obtiene los tiempos de proceso del proceso y de sus hijos
+      #include <sys/times.h>
+      clock_t times(struct tms *buffer);
+      Los campos de la estructura tms son:
+               clock_t    tms_utime;      /* tiempo de usuario */
+               clock_t    tms_stime;      /* tiempo de sistema */
+               clock_t    tms_cutime;     /* tiempo de usuario, hijos */
+               clock_t    tms_cstime;     /* tiempo de sistema, hijos */
+      Los tiempos se miden en la unidad 1/CLK_TCK segundos.
+      CLK_TCK es una variable configurable del sistema. Ver sysconf().
+
+gettimeofday() - proporciona la fecha y la hora
+      #include <sys/time.h>
+      int gettimeofday(struct timeval *tp, void *tzp);
+      Campos de la estructura timeval:
+               unsigned long  tv_sec;   /* segundos desde 1-1-1970 */
+               long           tv_usec;  /* y microsegundos */
+      Poner tzp a NULL.
+
+sysconf() - obtiene el valor de las variables configurables del sistema.
+      #include <unistd.h>
+      long sysconf(int nombre);
+      Si la variable que se quiere consultar es VAR, hay que poner la
+      macro _SC_VAR en nombre. Consultar man sysconf para las variables.
+
+exit() - finaliza un proceso
+      #include <stdlib.h>
+      void exit(int codret);
+
+
+ SESIÓN NÚMERO 5
+=================
+sigaction() - examina y cambia las acciones de las señales
+      #include <signal.h>
+      int sigaction (int sig, const struct sigaction *acciOn_nueva,
+                     struct sigaction *acciOn_vieja);
+      La señal puede ser una de éstas:
+      SIGABRT     ii        Señal para abortar proceso.
+      SIGALRM     i         Temporizador.
+      SIGFPE      ii        Operación aritmética errónea.
+      SIGHUP      i         Cuelgue de la comunicación.
+      SIGILL      ii        Instrucción ilegal.
+      SIGINT      i         Señal de interrupción del terminal.
+      SIGKILL     i         Matar (no puede interceptarse o ignorarse).
+      SIGPIPE     i         Escritura en una tubería que nadie quiere leer.
+      SIGQUIT     ii        Señal de salida del terminal.
+      SIGSEGV     ii        Referencia a memoria inválida.
+      SIGTERM     i         Señal para acabar.
+      SIGUSR1     i         Señal definida por el usuario número 1.
+      SIGUSR2     i         Señal definida por el usuario número 2.
+      SIGCHLD     iii       Proceso hijo acabado o parado.
+      SIGCONT     v         Continuar la ejecución, si se paró.
+      SIGSTOP     iv        Parar la ejecución (no puede interc. o ignorarse).
+      SIGTSTP     iv        Señal de parada del terminal.
+      SIGTTIN     iv        Proceso de segundo plano que intenta leer.
+      SIGTTOU     iv        Proceso de segundo plano que intenta escribir.
+      SIGBUS      ii        Error de bus.
+      SIGPOLL     i         Suceso de sondeo.
+      SIGPROF     i         Expiró el plazo de trazado.
+      SIGSYS      ii        Llamada al sistema errónea.
+      SIGTRAP     ii        Interrupción por punto de ruptura (breakpoint).
+      SIGURG      i         Datos urgentes en un socket.
+      SIGVTALRM   i         Expiró el plazo del temporizador virtual.
+      SIGXCPU     ii        Límite de tiempo de CPU excedido.
+      SIGXFSZ     ii        Límite de tamaño de fichero excedido.
+      Notas:
+         (i) La señal acaba con el proceso por defecto.
+         (ii) La señal acaba con el proceso por defecto y "core" opcional.
+         (iii) La señal es ignorada por defecto.
+         (iv) La señal para el proceso por defecto.
+         (v) El proceso continúa por defecto, si está parado.
+      Para más información, véase signal(5).
+      La estructura sigaction tienen los siguientes campos:
+      void(*)(int)  sa_handler     SIG_DFL, SIG_IGN o puntero a función.
+      sigset_t      sa_mask        Conjunto de señales que deben bloquearse
+				   adicionalmente cuando se ejecute la
+				   manejadora.
+      int           sa_flags       Flags especiales.
+      Para dar valores a sa_mask, se usan las funciones de librería(3C):
+      #include <signal.h>
+      int sigemptyset(sigset_t *set);
+      int sigfillset(sigset_t *set);
+      int sigaddset(sigset_t *set, int seNal);
+      int sigdelset(sigset_t *set, int seNal);
+      int sigismember(const sigset_t *set, int seNal);
+      El valor de sa_flags puede ser:
+	SA_NOCLDSTOP: No generar SIGCHLD cuando un hijo se para.
+	SA_RESETHAND: Cuando se llame a la manejadora, restaurar la
+	     intercepción de la señal a su valor por defecto.
+	SA_RESTART: Intentar continuar la función que fue interrumpida.
+	SA_NODEFER: La señal no se bloqueará cuando se llame a la mane-
+	     jadora a no ser que se especifique otra cosa en sa_mask.
+      Si se ignora la señal SIGCHLD, los hijos no se transformarán en zombies.
+
+sigprocmask() - examina y cambia las señales bloqueadas
+      #include <signal.h>
+      int sigprocmask(int quE_cosa, const sigset_t *nuevo, sigset_t *viejo);
+      quE_cosa puede valer: SIG_BLOCK, SIG_UNBLOCK, SIG_SETMASK.
+
+sigpending() - devuelve las señales bloqueadas de un proceso
+      #include <signal.h>
+      int sigpending(sigset_t *set);
+
+sigsuspend() - sustituye temporalmente las señales bloqueadas de un proceso
+               y lo bloquea hasta recibir una de ellas
+      int sigsuspend(const sigset_t *mask);
+
+alarm() - programa el despertador de un proceso
+      #include <unistd.h>
+      unsigned int alarm(unsigned int sec);
+      Hace que el proceso reciba una SIGALRM transcurridos sec segundos.
+      Si sec=0, se cancela la alarma.
+      Devuelve el tiempo que quedaba para la siguiente señal.
+
+pause() - bloquea proceso hasta señal
+      #include <unistd.h>
+      int pause(void);
+      Si llega a retornar, devuelve -1 y a errno le asigna EINTR.
+
+kill(), raise() - envían una señal a un proceso o a un grupo de
+      procesos
+      #include <signal.h>
+      int kill(pid_t pid, int sig);
+      int raise(int sig);
+      raise() hace que el propio proceso reciba la señal.
+
+
+ SESIÓN NÚMERO 6
+=================
+ftok() - crea id. para comunicación interproceso, función de biblioteca.
+      #include <sys/ipc.h>
+      key_t ftok(const char *path, int id);
+      path tiene que ser el nombre de cualquier fichero accesible e id
+      un entero identificativo del proyecto.
+
+semget() - obtiene un conjunto de semáforos
+      #include <sys/sem.h>
+      int semget(key_t clave, int nsems, int semflg);
+      La clave se puede obtener con una llamada a ftok(3) o con IPC_PRIVATE.
+      semflg puede ser IPC_CREAT | bits de permiso de los semáforos creados.
+      nsems: número de semáforos del conjunto.
+
+semop() - operaciones de semáforos
+      #include <sys/sem.h>
+      int semop(int semid, struct sembuf *sops, unsigned int nsops);
+      sops: array de operaciones sobre el conjunto de semáforos.
+      nsops: número de operaciones del array.
+      Campos de la estructura struct sembuf:
+           ushort    sem_num;      /* número de semáforo */
+           short     sem_op        /* operación de semáforo */
+           short     sem_flg;      /* flags de operación */
+      sem_op es el valor con que queremos incrementar el semáforo.
+             Si es cero, esperamos hasta que el semáforo se haga cero.
+      sem_flg: IPC_NOWAIT para no bloquearse.
+      Las operaciones no se realizan hasta que se puedan realizar todas.
+
+semctl() - operaciones de control de semáforos
+      #include <sys/sem.h>
+      int semctl(int semid, int semnum, int cmd, ...  /* arg */);
+      semnum: número de semáforo del array sobre el que se va a realizar
+	      la operación o 0, si no procede.
+      Un semáforo es una estructura de datos con los siguientes campos:
+           ushort semval;      /* valor del semáforo */
+           short  sempid;      /* pid de la última operación */
+           ushort semncnt;     /* nº procs esperando a que semval > cval */
+           ushort semzcnt;     /* nº procs esperando a que semval=0 */
+      La estructura struct semid_ds tiene los siguientes campos:
+           struct ipc_perm sem_perm;  /* permisos */
+           ushort sem_nsems;          /* número de semáforos del conjunto */
+           time_t sem_otime;          /* fecha de la última operación */
+           time_t sem_ctime;          /* fecha del último cambio */
+                                      /* tiempos medidos en segundos desde */
+                                      /* 00:00:00 GMT, 1 ene, 1970 */
+      Para ver la estructura struct ipc_perm, consultar msgctl.
+      cmd: GETVAL: la función devuelve el valor del semáforo especificado.
+	   SETVAL: asigna el valor del cuarto parámetro (int) al semáforo.
+	   GETPID: devuelve el valor de sempid.
+	   GETNCNT: devuelve el valor de semncnt.
+	   GETZCNT: devuelve el valor de semzcnt.
+	   GETALL: almacena en la dirección especificada por el cuarto
+		   parámetro (unsigned short int *) los valores de los
+		   semáforos del array.
+	   SETALL: como GETALL, pero del array a los semáforos.
+	   IPC_STAT: almacena la estructura struct semid_ds en la dirección
+		     apuntada por el cuarto parámetro.
+	   IPC_SET: Asigna los valores especificados por el cuarto parámetro
+		     al semáforo (los que sea posible modificar).
+	   IPC_RMID: Elimina el array de semáforos.
+		     
+
+ SESIÓN NÚMERO 7
+=================
+mknod() - crea ficheros normales, especiales o directorios
+      #include <sys/stat.h>
+      int mknod(const char *path, modo_t mode, dev_t dev);
+      mode es el O inclusivo a nivel de bits de los permisos y el tipo
+      de fichero que se desea crear. Se pueden usar las macros:
+      S_IFMT    tipo de fichero.
+      S_IFBLK   fichero especial de bloques.
+      S_IFCHR   fichero especial de caracteres.
+      S_IFIFO   tubería.
+      S_IFREG   fichero normal.
+      S_IFDIR   directorio.
+      S_IFLNK   enlace simbólico.
+      ---------------- Estos corresponden con los de la orden chmod:
+      S_IRWXU   lectura, escritura y ejecución/posicionamiento para dueño.
+      S_IRUSR   permiso de lectura, dueño.
+      S_IWUSR   permiso de escritura, dueño.
+      S_IXUSR   permiso de ejecución/posicionamiento, dueño.
+      S_IRWXG   lectura, escritura y ejecución/posicionamiento para grupo.
+      S_IRGRP   permiso de lectura, grupo.
+      S_IWGRP   permiso de escritura, grupo.
+      S_IXGRP   permiso de ejecución/posicionamiento, grupo.
+      S_IRWXO   lectura, escritura y ejecución/posicionamiento para otros.
+      S_IROTH   permiso de lectura, otros.
+      S_IWOTH   permiso de escritura, otros.
+      S_IXOTH   permiso de ejecución/posicionamiento, otros.
+      S_ISUID   activar ID de usuario en la ejecución.
+      S_ISGID   activar ID de grupo en la ejecución.
+      S_ISVTX   en los directorios, permiso de borrado restringido.
+      El tercer argumento sólo se usa para ficheros especiales de bloques
+      o caracteres. En otro caso, póngase un 0.
+
+pipe() - crea un canal interproceso
+      int pipe(int fildes[2]);
+      En filedes[0] está la entrada desde la tubería; en filedes[1],
+      la salida a la tubería.
+
+dup() - duplica un descriptor de fichero abierto
+      #include <unistd.h>
+      int dup(int fildes);
+      Devuelve el número de descriptor duplicado o -1, si hay error.
+      Se duplica al descriptor menor de los que estén desocupados.
+
+dup2() - duplica un descriptor de fichero abierto en una posición
+      específica de la tabla.
+      #include <unistd.h>
+      int dup2(int fildes, int fildes2);
+      Igual que dup, sólo que se duplica a fildes2. Si está abierto filedes2,
+      se cierra antes.
+
+fcntl() - control de ficheros
+      #include <fcntl.h>
+      int fcntl(int fildes, int cmd, ... /* arg */);
+      El valor de cmd puede ser:
+	F_DUPFD: actúa parecido a dup2(). Duplica en el primer descriptor
+		 de fichero libre mayor o igual que arg.
+	F_GETFD: obtiene el valor del flag close-on-exec (0 ó 1).
+	F_SETFD: da valor al flag close-on-exec (arg=0 ó 1).
+        F_GETFL: obtiene los flags de estado y modo de acceso.
+        F_SETFL: da valor a los flags de estado y modos de acceso (arg).
+
+msgget() - obtiene una cola de mensajes
+      #include <sys/msg.h>
+      int msgget(key_t clave, int msgflg);
+      La clave se puede obtener con una llamada a ftok(3) o con IPC_PRIVATE.
+      msgflg puede ser IPC_CREAT | bits de permiso del buzón creado.
+      Devuelve un identificador de la cola de mensajes.
+
+msgctl() - operaciones de control de mensajes
+      #include <sys/msg.h>
+      int msgctl(int msqid, int cmd, struct msqid_ds *buf);
+      cmd puede ser: IPC_STAT, para ver las variables de estado de la cola,
+		     IPC_SET, para dar valores a las variables de estado,
+		     IPC_RMID, para eliminar la cola de mensajes.
+      Campos de la estructura msqid_ds:
+		     strtuct ipc_perm msg_perm; /* permisos */
+		     ushort msg_qnum;           /* nº mensajes en cola */
+		 (*) ushort msg_qbytes;		/* máx. tamaño cola (bytes) */
+		     ushort msg_lspid;		/* pid último msgsnd */
+		     ushort msg_lrpid;		/* pid último msgrcv */
+		     time_t msg_stime;		/* tiempo último msgsnd */
+		     time_t msg_rtime;		/* tiempo último msgrcv */
+		     time_t msg_ctime;		/* tiempo último cambio */
+						/* en segs. desde 1-1-1970 */
+      Campos de la estructura ipc_perm:
+		     cuid			/* id del creador */
+		     cgid			/* id del grupo del creador */
+                 (*) uid			/* id del propietario */
+                 (*) gid			/* id grupo propietario */
+                 (*) mode			/* permisos (últ. 9 bits) */
+      (*) Modificable en un IPC_SET
+
+msgsnd(), msgrcv() - operaciones con mensajes
+      #include <sys/msg.h>
+      int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
+      int msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg);
+      El mensaje que se envía o recibe tiene la siguiente estructura:
+		long mtype; /* tipo del mensaje */
+		char mtext[x]; /* datos del mensaje */
+      msgsz incluye la longitud del mensaje menos la longitud del tipo.
+      Si se especifica IPC_NOWAIT en msgflg el proceso no se bloquea aunque
+      no pueda completar la llamada.
+      Opciones de msgrcv:
+	   msgflag puede contener MSG_NOERROR y cuando un mensaje no cabe
+	   en el buffer suministrado, lo trunca y no da error.
+      msgtyp: en msgrcv puede valer:
+	   0, recibir el primer mensaje de la cola.
+	   >0, recibir el primer mensaje del tipo especificado.
+	   <0, recibir el primer mensaje de tipo más bajo posible y que
+		sea menor o igual que el valor absoluto del tipo especificado.
+      msgdsnd devuelve 0 ó -1. msgrcv devuelve el número de bytes leídos o -1.
+
+
+ SESIÓN NÚMERO 8
+=================
+shmget() - consigue un segmento de memoria compartida
+      #include <sys/shm.h>
+      int shmget(key_t clave, size_t tamaNo, int shmflg);
+      tamaNo: tamaño de la zona de memoria compartida. Resto: como en msgget.
+
+shmat(), shmdt() - operaciones de memoria compartida
+      #include <sys/shm.h>
+      void *shmat(int shmid, void *shmaddr, int shmflg);
+      int shmdt(void *shmaddr);
+      shmaddr: 0, para que el sistema elija la dirección de memoria en shmat()
+	       y el valor devuelto por shmat() en shmdt().
+      shmflg: SHM_RDONLY, si sólo lo queremos para lectura.
+      shmat() devuelve un puntero a la zona de memoria asignada al segmento.
+
+shmctl() - operaciones de control de memoria compartida
+      #include <sys/shm.h>
+      int shmctl(int shmid, int cmd, struct shmid_ds *buf);
+      cmd puede ser:
+	  IPC_STAT: Almacena los valores del struct shmid_ds asociados al
+		    segmento de memoria compartida en lo apuntado por buf.
+	  IPC_SET:  Asigna valores al struct shmid_ds asociado al segmento
+		    de memoria compartida (los que se puedan).
+	  IPC_RMID: Marca para eliminar el segmento de memoria compartida. 
+		    Se eliminará cuando todos los procesos que estén vincu-
+		    lados a él se desvinculen.
+          SHM_LOCK: Bloquea el segmento de memoria compartida.
+	  SHM_UNLOCK: Desbloquea el segmento de memoria compartida.
+      Los campos de la estructura struct shmid_ds son:
+          struct  ipc_perm shm_perm; /* permisos */
+          int     shm_segsz;         /* tamaño del segmento */
+          ushort  shm_cpid;          /* pid del creador */
+          ushort  shm_lpid;          /* pid de la última operación */
+          short   shm_nattch;        /* número de vínculos */
+          time_t  shm_atime;         /* fecha del último vínculo */
+          time_t  shm_dtime;         /* fecha de la última desvinculación */
+          time_t  shm_ctime;         /* fecha del último cambio */
+                                     /* Fechas medidas en segundos desde */
+                                     /* 00:00:00 GMT, 1 ene, 1970 */
+      Para ver los campos de la estructura ipc_perm, ver msgctl.
+
+
+ SESIÓN NÚMERO 9
+=================
+getsid() - obtiene el identificador de sesión de un proceso.
+      #include <sys/types.h>
+      pid_t getsid (pid_t pid);
+      pid: 0, el propio proceso. El proceso referenciado tiene que estar en
+      la misma sesión.
+
+setsid() - crea una sesión.
+      #include <unistd.h>
+      pid_t setsid(void);
+      El proceso se queda sin terminal de control y se convierte en el
+      líder de la sesión.
+
+setpgrp() - crea un nuevo grupo de procesos.
+      #include <unistd.h>
+      pid_t setpgrp(void);
+      El proceso se queda sin terminal de control.
+
+setpgid() - une un proceso a un grupo de procesos.
+      #include <unistd.h>
+      int setpgid(pid_t pid, pid_t pgid);
+      Si pid es 0, el pid del invocante.
+
+ioctl() -control de dispositivos
+      #include <sys/ioctl.h>
+      int ioctl(int fildes, int peticiOn, ... /* arg */);
+
+Peticiones ioctl relacionadas con los terminales y sus argumentos:
+      - TCGETA, struct termio *: obtiene configuración del terminal.
+      - TCSETA, struct termio *: establece configuración del terminal.
+      - FIONREAD, long *: devuelve número de caracteres en la cola de entrada.
+      - TIOCGPGRP, int *: devuelve el grupo de primer plano del terminal.
+      - TIOCSPGRP, int *: establece el grupo de primer plano del terminal.
+      - TIOCGSID, int *: devuelve la sesión asignada al terminal.
+      - TIOCGWINSZ, struct winsize *: devuelve el tamaño de la pantalla.
+      - TIOCSWINSZ, struct winsize *: establece el tamaño de la pantalla.
+        Cuando se hace esta última petición se envía una señal SIGWINCH
+        a todos los procesos del grupo de primer plano del terminal.
+
+La estructura winsize tiene los siguientes campos:
+              unsigned short   ws_row;      /* filas, en caracteres */
+              unsigned short   ws_col;      /* columnas, en caracteres */
+              unsigned short   ws_xpixel;   /* tamaño hor., en píxeles */
+              unsigned short   ws_ypixel;   /* tamaño vert., en píxeles */
+
+La estructura termio se encuentra en <termio.h> y tiene los siguientes campos:
+           #define   NCC              8
+           struct termio           
+		    {unsigned short   c_iflag;     /* modos de entrada */
+                     unsigned short   c_oflag;     /* modos de salida */
+                     unsigned short   c_cflag;     /* modos de control */
+                     unsigned short   c_lflag;     /* modos locales */
+                     unsigned char    c_cc[NCC];   /* caracts. de control */};
+	   Algunas macros para cada uno de los modos:
+	       - entrada: ISTRIP (borrado del bit 7), IXON (control de flujo),
+			  IXOFF, IXANY (reaunudación con cualquier carácter),
+			  INLCR (cambiar NL por CR), ...
+	       - salida:  OPOST (procesar salida), ONLCR (añadir CR al NL),
+			  XTABS (cambiar tabuladores por espacios), ...
+	       - control: CS8 (caracteres de 8 bits), PARENB (con paridad),
+			  CLOCAL (no hay modem hasta el terminal), ...
+	       - local:   ISIG (el terminal puede mandar señales),
+			  ICANON (modo canónico), ECHO (eco de caracteres),
+			  TOSTOP (los procesos en 2º plano se paran al
+			  escribir), ECHOCTL (cars. control = ^x), ...
+	   Índices del array c_cc:
+	       INTR (carácter de interrupción, manda SIGINT),
+	       QUIT (parada, manda SIGQUIT), ERASE (borrado),
+	       WERASE (borrado de palabra), KILL (borrado de línea),
+	       EOF (fin de fichero), NL (fin de línea),
+	       SUSP (parada, manda SIGTSTP), STOP (detiene salida),
+	       START (reanuda salida si IXON & ~IXANY), para modo canónico.
+	       VTIME (en décimas de s) y VMIN, para el modo no canónico.
+	   Posibilidades del modo no canónico:
+	       - TIME>0, MIN>0: TIME es timeout intercarácter.
+	       - TIME>0, MIN=0: TIME es timeout de lectura.
+	       - TIME=0, MIN>0: hay que recibir MIN caracteres al menos.
+	       - TIME=0, MIN=0: vuelve de inmediato. 0 si no hay caracteres.
+
+Véanse también las órdenes: ps -j, stty(1), terminfo(4), tput(1), termio(7)
+      y las variables de entorno TERM, LINES y COLUMNS.
+
+Algunos códigos de salida del terminal vt100:
+    - blink    (activar parpadeo):  <ESC> [ 5 m.
+    - bold     (activar negrita):   <ESC> [ 1 m.
+    - dim      (activar tenue):     no existe.
+    - rev      (activar inverso):   <ESC> [ 7 m.
+    - sgr0     (desact. atributos): <ESC> [ m.
+    - smso     (activar resaltado): <ESC> [ 7 m.
+    - rmso     (desact. resaltado): <ESC> [ m.
+    - smul     (activar subrayado): <ESC> [ 4 m.
+    - rmul     (desact. subrayado): <ESC> [ m.
+    - flash    (señal luminosa):    no existe.
+    - bel      (señal sonora):      <CTRL+G>.
+    - cvis     (cursor invisible):  <ESC> [ ? 25 I.
+    - cnorm    (cursor normal):     <ESC> [ ? 25 h.
+    - home     (cursor a home):     <ESC> [ H.
+    - clear    (limpiar pantalla):  <ESC> [ H <ESC> [ J.
+    - cup      (mover cursor):      <ESC> [ fila ; columna H.
+
+Algunos códigos de entrada del terminal vt100:
+    - kcuu1    (tecla arriba):      <ESC> O A.
+    - kcud1    (tecla abajo):       <ESC> O B.
+    - kcuf1    (tecla derecha):     <ESC> O C.
+    - kcub1    (tecla izquierda):   <ESC> O D.
+
+
+ SESIÓN NÚMERO 10
+==================
+select() - multiplexión de E/S síncrona.
+      #include <sys/time.h>
+      int select(int nfds, fd_set *readfds, fd_set *writefds,
+			   fd_set *errorfds, struct timeval *timeout);
+      La llamada se bloquea hasta que ocurra una determinada condición
+      sobre cualquiera de un conjunto de descriptores de fichero.
+      nfds es el rango de descriptores de fichero que se comprobará.
+      Se comprueba desde el descriptor 0 (entrada estándar) hasta el nfds-1.
+      readfds indica cuáles de los descriptores se comprobarán para lectura.
+      writefds indica cuáles se comprobarán para escritura.
+      errorfds, cuáles se comprobarán para ver condiciones de error.
+      readfds, writefds o errorfds pueden ser NULL si no se desea comprobar
+      ningún descriptor para la correspondiente condición.
+
+      Para especificar los descriptores se usará:
+      void FD_ZERO(fd_set *fdset);, para limpiar el conjunto.
+      void FD_SET(int fd, fd_set *fdset);, para añadir un descriptor al conj.
+      void FD_CLR(int fd, fd_set *fdset);, para eliminar un descriptor.
+
+      En las correspondientes variables se indicará cuáles de los especifi-
+      cados están listos para lectura, para escritura y cuáles tienen condi-
+      ción de error.
+
+      timeout (ver gettimeofday) puede ser:
+	    - Un valor > 0: el tiempo durante el cual la llamada al sistema
+			    select se bloqueará.
+	    - Un valor de 0: select no se bloquea.
+	    - NULL:         select se bloquea indefinidamente.
+
+      Se puede comprobar si un descriptor pertenece a un conjunto con:
+      int FD_ISSET(int fd, fd_set *fdset); /* Verdad si pertenece al conj. */
+
+      select devuelve el número de descriptores que han permanecido en
+      los conjuntos o -1, si hay error.
+
+
+ SESIÓN NÚMERO 11
+==================
+BOOL CreateProcess( LPCTSTR lpApplicationName, LPTSTR lpCommandLine, 
+                    LPSECURITY_ATTRIBUTES lpProcessAttributes, 
+                    LPSECURITY_ATTRIBUTES lpThreadAttributes, 
+                    BOOL bHeredHandles, 
+                    DWORD dwCreationFlags, LPVOID lpEnvironment, 
+                    LPCTSTR lpCurrentDirectory, LPSTARTUPINFO lpStartupInfo, 
+                    LPPROCESS_INFORMATION lpProcessInformation);
+      Crea un nuevo proceso a partir del ejecutable lpApplicationName.
+      Dejar a NULL lpProccessAttributes, lpThreadAttributes y lpEnvironment.
+      dwCreationFlags: CREATE_NEW_PROCESS_GROUP, CREATE_SUSPENDED, 
+                       IDLE_PRIORITY_CLASS (4), NORMAL_PRIORITY_CLASS (7),
+                       HIGH_PRIORITY_CLASS (13), REALTIME_PRIORITY_CLASS (24).
+      lpCurrentDirectory: directorio de trabajo (NULL -> dejar el actual)
+      lpStartupInfo: información acerca de la ventana que creará la aplicación.
+                     Podéis usar la función: 
+                     VOID GetStartupInfo( LPSTARTUPINFO lpStartupInfo);
+      lpProcessInformation: aquí se devuelve la información del nuevo proceso:
+          typedef struct _PROCESS_INFORMATION
+             {HANDLE hProcess; HANDLE hThread; DWORD dwProcessId;
+              DWORD dwThreadId;} PROCESS_INFORMATION; 
+
+HANDLE GetCurrentProcess(VOID);
+DWORD GetCurrentProcessId(VOID);
+
+DWORD GetPriorityClass( HANDLE hProcess);
+      Devuelve uno de los valores vistos en CreateProcess, ó 0 si hay error.
+BOOL SetPriorityClass( HANDLE hProcess, DWORD dwPriorityClass);
+      dwPriorityClass puede tomar los valores vistos en CreateProcess.
+
+VOID ExitProcess( UINT uExitCode);
+BOOL TerminateProcess( HANDLE hProcess, UINT uExitCode);
+      Mata a un proceso. Usar sólo si es imprescindible.
+
+BOOL GetExitCodeProcess( HANDLE hProcess, LPDWORD lpExitCode);
+
+HANDLE CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes,DWORD dwStackSize,
+                    LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, 
+                    DWORD dwCreationFlags, LPDWORD lpThreadId);
+      Crea un nuevo hilo de ejecución en un proceso.
+      Dejar a NULL lpThreadAttributes y a 0 dwStackSize.
+      lpStartAddress es la función que ejecutará el thread. Tiene que tener el
+                     prototipo: DWORD WINAPI funciOn(LPVOID parAmetro);
+                     El código de retorno del thread es el de la función.
+                     El parámetro que se usará en la función lo da lpParameter.
+      dwCreationFlags puede ser CREATE_SUSPENDED.
+      En lpThreadId se devuelve el identificador del thread, mientras que la
+      función devuelve un "handle" del thread.
+
+HANDLE GetCurrentThread(VOID);
+DWORD GetCurrentThreadId(VOID);
+
+int GetThreadPriority( HANDLE hThread);
+      Si falla, devuelve THREAD_PRIORITY_ERROR_RETURN.
+      Puede devolver (la prioridad normal para cada clase en CreateProcess): 
+          THREAD_PRIORITY_ABOVE_NORMAL (normal+1),
+          THREAD_PRIORITY_BELOW_NORMAL (normal-1),
+          THREAD_PRIORITY_HIGHEST (+2),  THREAD_PRIORITY_LOWEST (-2),
+          THREAD_PRIORITY_IDLE (=1 para clases IDLE,NORMAL o HIGH; 
+                                =16 para la REALTIME),
+          THREAD_PRIORITY_TIME_CRITICAL (=31 para la REALTIME, 
+                                         =15 para demás clases)
+          o THREAD_PRIORITY_NORMAL (=).
+BOOL SetThreadPriority( HANDLE hThread, int nPriority); 
+
+DWORD SuspendThread( HANDLE hThread);
+      Devuelve número de veces que estaba suspendido el proceso o -1, si error.
+DWORD ResumeThread( HANDLE hThread);
+      Decrementa la cuenta de suspensión de un thread. Si llega a cero, lo
+      rearranca. Devuelve el número de veces que estaba suspendido el proceso
+      o -1, si error. 
+
+VOID ExitThread( DWORD dwExitCode);
+BOOL TerminateThread( HANDLE hThread, DWORD dwExitCode);
+BOOL GetExitCodeThread( HANDLE hThread, LPDWORD lpExitCode);
+
+BOOL DuplicateHandle( HANDLE hSourceProcessHandle, HANDLE hSourceHandle, 
+                      HANDLE hTargetProcessHandle, LPHANDLE lpTargetHandle, 
+                      DWORD dwDesiredAccess, BOOL bHeredaHandle,
+                      DWORD dwOptions);
+      Duplica un handle del proceso fuente en el espacio del proceso destino.
+      dwDesiredAccess: tipo de acceso deseado (depende del tipo de handle).
+      bHeredaHandle: verdadero, si el handle será heredable.
+      dwOptions: DUPLICATE_CLOSE_SOURCE, cierra el handle origen.
+                 DUPLICATE_SAME_ACCESS, lo crea con mismo acceso que el origen;
+                     en ese caso, se ignora el parámetro dwDesiredAccess.
+      El handle de un proceso se puede obtener con:
+      OpenHandle(PROCESS_ALL_ACCESS,False,identificador_proceso);
+BOOL CloseHandle( HANDLE hObject);
+
+VOID Sleep( DWORD dwMilliseconds);
+      Si dwMilliseconds es 0, cede la CPU a otro proceso perdiendo el resto 
+      del cuanto. También se puede usar la constante INFINITE.
+
+
+ SESIÓN NÚMERO 12
+==================
+DWORD WaitForSingleObject( HANDLE hHandle, DWORD dwMilliseconds);
+      dwMilliseconds puede ser INFINITE.
+      Valor devuelto: WAIT_ABANDONED (el objeto es mutex y el dueño murió),
+          WAIT_OBJECT_0 (objeto señalado), WAIT_TIMEOUT ó WAIT_FAILED.
+
+DWORD WaitForMultipleObjects( DWORD nCount, CONST HANDLE *lpHandles, 
+                              BOOL fWaitAll, DWORD dwMilliseconds);
+      fWaitAll -> esperar por todos ó esperar por cualquiera de ellos.
+      Valor devuelto: si fWaitAll es falso, WAIT_OBJECT_0, WAIT_OBJECT_0+1,...
+          indica el objeto de menor índice señalado. Lo mismo para
+          WAIT_ABANDONED_0, WAIT_ABANDONED_0+1, etc. Si fWaitAl es verdad,
+          WAIT_ABANDONED_0 indica que al menos un mutex se abandonó.
+          Resto, como WaitForSingle...
+
+VOID InitializeCriticalSection( LPCRITICAL_SECTION lpCriticalSection);
+BOOL TryEnterCriticalSection( LPCRITICAL_SECTION lpCriticalSection);
+VOID EnterCriticalSection( LPCRITICAL_SECTION lpCriticalSection);
+VOID LeaveCriticalSection( LPCRITICAL_SECTION lpCriticalSection);
+VOID DeleteCriticalSection( LPCRITICAL_SECTION lpCriticalSection);
+
+HANDLE CreateMutex( LPSECURITY_ATTRIBUTES lpMutexAttributes,BOOL bInitialOwner,
+                    LPCTSTR lpName);
+      lpMutexAttibutes dejar a NULL. bInitialOwner verdad si queremos poseerlo.
+      lpName NULL si queremos sin nombre. Devuelve NULL si falla.
+HANDLE OpenMutex( DWORD dwDesiredAccess, BOOL bHeredaHandle, LPCTSTR lpName); 
+      Accede a un mutex ya creado. dwDesiredAccess -> MUTEX_ALL_ACCESS.
+BOOL ReleaseMutex( HANDLE hMutex);
+
+HANDLE CreateSemaphore( LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,
+                        LONG lInitialCount, LONG lMaximumCount,LPCTSTR lpName);
+      lpSemaphoreAttibutes dejar a NULL. lpName a NULL => sin nombre.
+HANDLE OpenSemaphore( DWORD dwDesiredAccess, BOOL bInheritHandle, 
+                      LPCTSTR lpName); 
+      Accede a un semáforo ya creado. dwDesiredAccess -> SEMAPHORE_ALL_ACCESS.
+BOOL ReleaseSemaphore( HANDLE hSemaphore, LONG lReleaseCount,
+                       LPLONG lpPreviousCount);
+      lReleaseCount -> cuánto sumamos. lpPreviousCount -> valor anterior.
+
+HANDLE CreateEvent( LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset,
+                    BOOL bInitialState, LPCTSTR lpName);
+      lpEventAttributes dejar a NULL. bManualReset -> ¿hay que resetearlo?
+      manualmente con ResetEvent(). bInitialState -> verdad, señalado.
+      lpName a NULL => sin nombre.
+HANDLE OpenEvent( DWORD dwDesiredAccess, BOOL bInheritHandle, LPCTSTR lpName);
+      Accede a un evento ya creado. dwDesiredAccess -> EVENT_ALL_ACCESS.
+BOOL SetEvent( HANDLE hEvent); Hace que el evento pase a estar señalado.
+BOOL ResetEvent( HANDLE hEvent); Hace que el evento pase a estar no señalado.
+BOOL PulseEvent( HANDLE hEvent);
+      Hace que el evento pase a estar señalado unos instantes hasta que
+      se desbloqueen los hilos que esperaban por él.
+
+LONG InterlockedIncrement( LPLONG lpAddend);
+      Incrementa de modo atómico la variable apuntada por lpAddend.
+      Devuelve el valor incrementado.
+LONG InterlockedDecrement( LPLONG lpAddend);
+LONG InterlockedExchange( LPLONG Target, LONG Value);
+
+
+ SESIÓN NÚMERO 13
+==================
+DWORD GetLogicalDrives(VOID);
+      Devuelve un mapa de bits con los discos disponibles (A: -> bit0, etc.)
+DWORD GetLogicalDriveStrings( DWORD nBufferLength, LPTSTR lpBuffer);
+      Devuelve, separados por '\0's las letras de discos que hay disponibles.
+UINT GetDriveType( LPCTSTR lpRootPathName);
+      Devuelve el tipo de disco. P.ej. GetDriveType("A:\\") -> disco A:.
+      Posibles valores devueltos: DRIVE_UNKNOWN, DRIVE_NO_ROOT_DIR (error),
+            DRIVE_REMOVABLE, DRIVE_FIXED, DRIVE_REMOTE (de red), DRIVE_CDROM,
+            DRIVE_RAMDISK.
+BOOL GetVolumeInformation( LPCTSTR lpRootPathName, LPTSTR lpVolumeNameBuffer, 
+                           DWORD nVolumeNameSize, LPDWORD lpVolumeSerialNumber,
+                           LPDWORD lpMaximumComponentLength,
+                           LPDWORD lpFileSystemFlags, 
+                           LPTSTR lpFileSystemNameBuffer,
+                           DWORD nFileSystemNameSize);
+     Devuelve información de una unidad de disco. lpRootPathName como en
+     GetDriveType. En lpVolumeNameBuffer (de tamaño nVolumeNameSize) devuelve
+     el nombre del volumen. En lpMaximumComponentLength, el tamaño máximo del
+     nombre de un fichero. lpFileSystemFlags en el retorno puede contener
+     activo uno o más de los siguientes:
+           FS_CASE_IS_PRESERVED (disco respeta mayúsc/minúsc en los nombres),
+           FS_CASE_SENSITIVE (considera diferentes mays/mins), 
+           FS_VOL_IS_COMPRESSED, FILE_VOLUME_QUOTAS.
+     En lpFileSystemNameBuffer, de long nFileSystemNameSize se almacena el tipo
+           de sistema de ficheros (FAT, NTFS, etc.)
+BOOL SetVolumeLabel( LPCTSTR lpRootPathName, LPCTSTR lpVolumeName);
+BOOL GetDiskFreeSpace( LPCTSTR lpRootPathName, LPDWORD lpSectorsPerCluster,
+                       LPDWORD lpBytesPerSector,LPDWORD lpNumberOfFreeClusters,
+                       LPDWORD lpTotalNumberOfClusters);
+
+DWORD GetCurrentDirectory( DWORD nBufferLength, LPTSTR lpBuffer);
+      Devuelve el número de caracteres escritos sin el '\0'. 0, si error.
+BOOL SetCurrentDirectory( LPCTSTR lpPathName);
+BOOL CreateDirectory( LPCTSTR lpPathName,
+                      LPSECURITY_ATTRIBUTES lpSecurityAttributes);
+BOOL RemoveDirectory( LPCTSTR lpPathName);   Tiene que estar vacío.
+
+HANDLE FindFirstFile( LPCTSTR lpFileName, LPWIN32_FIND_DATA lpFindFileData);
+BOOL FindNextFile( HANDLE hFindFile, LPWIN32_FIND_DATA lpFindFileData);
+BOOL FindClose( HANDLE hFindFile);
+      Búsquedas o listados de directorios.
+      typedef struct _WIN32_FIND_DATA
+         {DWORD dwFileAttributes;
+          FILETIME ftCreationTime; FILETIME ftLastAccessTime;
+          FILETIME ftLastWriteTime; DWORD nFileSizeHigh; DWORD nFileSizeLow;
+          DWORD dwReserved0; DWORD dwReserved1; TCHAR cFileName[ MAX_PATH ];
+          TCHAR cAlternateFileName[ 14 ]; } WIN32_FIND_DATA; 
+
+BOOL CopyFile( LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName, 
+               BOOL bFailIfExists);
+BOOL DeleteFile( LPCTSTR lpFileName);
+BOOL MoveFile( LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName);
+      Debe estar en el mismo volumen si se mueve un directorio.
+      El destino no debe existir.
+
+HANDLE CreateFile( LPCTSTR lpFileName, DWORD dwDesiredAccess,DWORD dwShareMode,
+                   LPSECURITY_ATTRIBUTES lpSecurityAttributes, 
+                   DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, 
+                   HANDLE hTemplateFile);
+      Crea o accede a un fichero, tubería, buzón, etc. ya creado.
+      dwDesiredAccess -> GENERIC_READ, GENERIC_WRITE, (0, consulta, no abre)
+      dwShareMode -> FILE_SHARE_READ,FILE_SHARE_WRITE,FILE_SHARE_DELETE o nada.
+      lpSecurityAttributes -> dejar a NULL.
+      dwCreationDisposition -> CREATE_NEW, CREATE_ALWAYS, OPEN_EXISTING,
+                               OPEN_ALWAYS, TRUNCATE_EXISTING
+      dwFlagsAndAttributes -> FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_ARCHIVE,
+                              FILE_ATTRIBUTE_HIDDEN, FILE_ATTRIBUTE_READONLY,
+                              FILE_ATTRIBUTE_SYSTEM, FILE_ATTRIBUTE_TEMPORARY,
+                              FILE_FLAG_WRITE_THROUGH, FILE_FLAG_OVERLAPPED,
+                              FILE_FLAG_RANDOM_ACCESS,
+                              FILE_FLAG_SEQUENTIAL_SCAN,
+                              FILE_FLAG_DELETE_ON_CLOSE.
+      hTemplateFile -> NULL o un fichero del que se copian flags y atributos.
+
+BOOL ReadFile( HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead,
+               LPDWORD lpNumberOfBytesRead, LPOVERLAPPED lpOverlapped);
+      Lee bytes de un fichero abierto en lpBuffer.
+      lpOverlapped será distinto de NULL si usamos entrada/salida solapada.
+      typedef struct _OVERLAPPED {
+          DWORD Internal; DWORD InternalHigh; /* Reservado, no tocar. */
+          DWORD Offset; DWORD OffsetHigh; /* Desplazamiento donde leer/escr */
+          HANDLE hEvent; /* NULL, o evento queremos se active cuando acabe */
+          } OVERLAPPED; 
+BOOL ReadFileEx( HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead,
+                 LPOVERLAPPED lpOverlapped, 
+                 LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
+      La lpCompletionRoutine tiene que tener el prototipo:
+      VOID CALLBACK FileIOCompletionRoutine( DWORD dwErrorCode, 
+                 DWORD dwNumberOfBytesTransfered, LPOVERLAPPED lpOverlapped);
+BOOL WriteFile( HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite,
+                 LPDWORD lpNumberOfBytesWritten, LPOVERLAPPED lpOverlapped);
+BOOL WriteFileEx( HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite,
+                  LPOVERLAPPED lpOverlapped, 
+                  LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
+
+BOOL GetOverlappedResult( HANDLE hFile, LPOVERLAPPED lpOverlapped,
+                          LPDWORD lpNumberOfBytesTransferred, BOOL bWait);
+      bWait-> verdad si tiene que esperar a que acabe la E/S solapada.
+      Si bWait falso y no ha acabado, da 0 y el error ERROR_IO_INCOMPLETE. 
+DWORD SleepEx( DWORD dwMilliseconds, BOOL bAlertable);
+      Función Sleep extendida, como Sleep, sólo que si bAlertable es verdad,
+      puede retornar antes si se llamó a una rutina de fin de e/s solapada.
+      En este caso, devuelve WAIT_IO_COMPLETION.
+DWORD WaitForSingleObjectEx( HANDLE hHandle, DWORD dwMilliseconds,
+                             BOOL bAlertable);
+DWORD WaitForMultipleObjectsEx( DWORD nCount, CONST HANDLE *lpHandles,
+                                BOOL fWaitAll,
+                                DWORD dwMilliseconds, BOOL bAlertable);
+
+DWORD SetFilePointer( HANDLE hFile, LONG lDistanceToMove,
+                      LPLONG lpDistanceToMoveHigh, DWORD dwMoveMethod);
+      Establece o devuelve el puntero de fichero.
+      dwMoveMethod -> FILE_BEGIN, FILE_CURRENT, FILE_END.
+BOOL SetEndOfFile( HANDLE hFile);
+      Sitúa el fin de fichero en la posición actual del puntero de fichero.
+
+DWORD GetFileSize( HANDLE hFile, LPDWORD lpFileSizeHigh);
+BOOL GetFileTime( HANDLE hFile, LPFILETIME lpCreationTime, 
+                  LPFILETIME lpLastAccessTime, LPFILETIME lpLastWriteTime);
+LONG CompareFileTime( CONST FILETIME *lpFileTime1,CONST FILETIME *lpFileTime2);
+      Devuelve -1, 0 ó 1 si *lpFileTime1 es menor, igual o mayor que 
+      *lpFileTime2.
+BOOL FileTimeToSystemTime( CONST FILETIME *lpFileTime,
+                           LPSYSTEMTIME lpSystemTime);
+      typedef struct _SYSTEMTIME
+         {WORD wYear; WORD wMonth; WORD wDayOfWeek; WORD wDay; WORD wHour;
+          WORD wMinute; WORD wSecond; WORD wMilliseconds; } SYSTEMTIME; 
+      wDayOfWeek -> 0, domingo; 1, lunes; 2, martes y así...
+BOOL SetFileTime( HANDLE hFile, CONST FILETIME *lpCreationTime, 
+                  CONST FILETIME *lpLastAccessTime,
+                  CONST FILETIME *lpLastWriteTime);
+BOOL SystemTimeToFileTime( CONST SYSTEMTIME *lpSystemTime,
+                           LPFILETIME lpFileTime);
+BOOL GetFileInformationByHandle( HANDLE hFile, 
+                             LPBY_HANDLE_FILE_INFORMATION lpFileInformation);
+      typedef struct _BY_HANDLE_FILE_INFORMATION 
+         {DWORD dwFileAttributes; FILETIME ftCreationTime;
+          FILETIME ftLastAccessTime; FILETIME ftLastWriteTime;
+          DWORD dwVolumeSerialNumber; DWORD nFileSizeHigh; DWORD nFileSizeLow;
+          DWORD nNumberOfLinks; DWORD nFileIndexHigh; DWORD nFileIndexLow;
+          } BY_HANDLE_FILE_INFORMATION; 
+      dwFileAttibutes pueden ser: FILE_ATTRIBUTE_ARCHIVE,
+          FILE_ATTRIBUTE_COMPRESSED, FILE_ATTRIBUTE_ENCRYPTED,
+          FILE_ATTRIBUTE_DIRECTORY, FILE_ATTRIBUTE_HIDDEN,
+          FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_READONLY,FILE_ATTRIBUTE_SYSTEM,
+          FILE_ATTRIBUTE_TEMPORARY.
+      dwFileIndexHigh:dwFileIndexLow forman un identificador único del fichero.
+
+BOOL FlushFileBuffers( HANDLE hFile);
+
+BOOL LockFile( HANDLE hFile, DWORD dwFileOffsetLow, DWORD dwFileOffsetHigh, 
+               DWORD nNumberOfBytesToLockLow, DWORD nNumberOfBytesToLockHigh);
+      Bloquea una zona de un fichero para acceso exclusivo.
+BOOL UnlockFile( HANDLE hFile, DWORD dwFileOffsetLow, DWORD dwFileOffsetHigh,
+                 DWORD nNumberOfBytesToUnlockLow,
+                 DWORD nNumberOfBytesToUnlockHigh);
+
+
+ SESIÓN NÚMERO 14
+==================
+Todas las funciones Heap... son funciones de biblioteca.
+HANDLE HeapCreate( DWORD flOptions, DWORD dwInitialSize, DWORD dwMaximumSize);
+      flOptions -> HEAP_GENERATE_EXCEPTIONS, genera excepción falta de memoria;
+                   HEAP_NO_SERIALIZE, no regula automátte. la exclusión mutua;
+      Si dwMaximumSize es cero, no hay tamaño máximo ni petición máxima.
+HANDLE GetProcessHeap(VOID);
+LPVOID HeapAlloc( HANDLE hHeap, DWORD dwFlags, DWORD dwBytes);
+      dwFlags -> los mismos que HeapCreate(si se especifican, prevalecen estos)
+                 y HEAP_ZERO_MEMORY, si queremos que memoria se inicie a cero.
+      dwBytes -> Como máximo 0x7FFF8, si el "heap" tiene tamaño máximo.
+      GetLastError no funciona con HeapAlloc.
+LPVOID HeapReAlloc( HANDLE hHeap, DWORD dwFlags, LPVOID lpMem, DWORD dwBytes);
+      Cambia el tamaño de una zona previamente reservada.
+      dwFlags -> como en HeapAlloc más HEAP_REALLOC_IN_PLACE_ONLY.
+DWORD HeapSize( HANDLE hHeap, DWORD dwFlags, LPCVOID lpMem );
+      Devuelve el tamaño real de una zona reservada en el Heap.
+      dwFlags puede ser HEAP_NO_SERIALIZE. Devuelve -1 si falla.
+BOOL HeapFree( HANDLE hHeap, DWORD dwFlags, LPVOID lpMem);
+      dwFlags puese ser HEAP_NO_SERIALIZE.
+BOOL HeapDestroy( HANDLE hHeap);
+
+LPVOID VirtualAlloc( LPVOID lpAddress, DWORD dwSize, DWORD flAllocationType, 
+                     DWORD flProtect);
+      lpAddress -> NULL para que el sistema decida dónde reservarla.
+      dwSize lo redondeará al tamaño de la página.
+      flAllocationType -> MEM_COMMIT: hace efectiva una reserva.
+                          MEM_RESERVE: reserva la zona de memoria.
+                          MEM_TOP_DOWN: reserva en la zona superior de memoria.
+      flProtect -> se especificará alguno de estos flags cuando se haga
+                   efectiva una reserva:
+                          PAGE_READONLY, PAGE_READWRITE, PAGE_EXECUTE,
+                          PAGE_EXECUTE_READ, PAGE_EXECUTE_READWRITE,
+                          PAGE_NOACCESS, PAGE_NOCACHE.
+BOOL VirtualProtect( LPVOID lpAddress, DWORD dwSize, DWORD flNewProtect, 
+                     PDWORD lpflOldProtect);
+      Permite cambiar el tipo de protección de una zona reservada con
+      VirtualAlloc. En lpflOldProtect devuelve la protección anterior.
+BOOL VirtualLock( LPVOID lpAddress, DWORD dwSize);
+      Bloquea un conjunto de páginas para que no se haga intercambio con ellas.
+BOOL VirtualUnlock( LPVOID lpAddress, DWORD dwSize);
+BOOL VirtualFree( LPVOID lpAddress, DWORD dwSize, DWORD dwFreeType); 
+      dwFreeType -> puede ser MEM_DECOMMIT o MEM_RELEASE.
+      Si se usa MEM_RELEASE, dwSize debe ser 0.
+
+VOID GlobalMemoryStatus( LPMEMORYSTATUS lpBuffer);
+      Devuelve información de la memoria del sistema en una estructura.
+      typedef struct _MEMORYSTATUS 
+                 {DWORD dwLength; // sizeof(MEMORYSTATUS)
+                  DWORD dwMemoryLoad; // porcentaje de memoria usada 
+                  DWORD dwTotalPhys; // bytes de memoria física
+                  DWORD dwAvailPhys; // bytes de memoria física libres
+                  DWORD dwTotalPageFile; // bytes del fichero de paginación
+                  DWORD dwAvailPageFile; // bytes libres fichero de paginación
+                  DWORD dwTotalVirtual; // bytes del espacio de usuario
+                  DWORD dwAvailVirtual; // bytes libres del espacio de usuario
+                  } MEMORYSTATUS, *LPMEMORYSTATUS; 
+
+HANDLE CreateFileMapping(HANDLE hFile, LPSECURITY_ATTRIBUTES lpFileMappingAttributes,
+                         DWORD flProtect, DWORD dwMaximumSizeHigh, 
+                         DWORD dwMaximumSizeLow, LPCTSTR lpName); 
+      Crea un fichero proyectado en memoria con o sin nombre.
+      hFile -> handle fichero para proyectar o (HANDLE)-1 si no queremos fich.
+      lpFileMappingAttributes, dejar a NULL.
+      flProtect puede ser:
+          PAGE_READONLY, PAGE_READWRITE, PAGE_WRITECOPY (copiar si se escribe),
+      El tamaño es una cantidad de 64 bits formada por
+          dwMaximumSizeHigh:dwMaximumSizeLow, cada una de 32 bits.
+      lpName, como en CreateSemaphore.
+HANDLE OpenFileMapping( DWORD dwDesiredAccess, BOOL bInheritHandle,
+                        LPCTSTR lpName);
+      Accede a un fichero proyectado ya creado. 
+      dwDesiredAccess -> FILE_MAP_ALL_ACCESS.
+LPVOID MapViewOfFile( HANDLE hFileMappingObject, DWORD dwDesiredAccess, 
+                      DWORD dwFileOffsetHigh, DWORD dwFileOffsetLow, 
+                      DWORD dwNumberOfBytesToMap);
+      Proyecta una zona de un fichero proyectado en memoria.
+      dwDesiredAccess puede ser: FILE_MAP_WRITE (lectura/escritura),
+            FILE_MAP_READ (sólo lectura),FILE_MAP_ALL_ACCESS (=FILE_MAP_WRITE),
+            FILE_MAP_COPY (copiar si se escribe). 
+      dwFileOffsetHigh:dwFileOffsetLow -> desplazamiento en el fichero como
+            dwMaximumSize en CreateMappingFile.
+BOOL FlushViewOfFile( LPCVOID lpBaseAddress, DWORD dwNumberOfBytesToFlush);
+      Actualiza el fichero proyectado en disco.
+      Si dwNumberOfBytesToFlush es cero, significa hasta el final.
+BOOL UnmapViewOfFile( LPCVOID lpBaseAddress);
+
+
+ SESIÓN NÚMERO 15
+==================
+BOOL PostThreadMessage(DWORD idThread, UINT Msg, WPARAM wParam, LPARAM lParam);
+BOOL PeekMessage( LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin,
+                  UINT wMsgFilterMax, UINT wRemoveMsg);
+      typedef struct tagMSG 
+         {HWND hwnd; UINT message; WPARAM wParam; LPARAM lParam; 
+          DWORD time; POINT pt; } MSG; 
+          time es el tiempo en que fue mandado y pt, dónde estaba el cursor.
+      hWnd dejar a NULL.
+      wRemoveMsg -> PM_REMOVE ó PM_NOREMOVE
+BOOL GetMessage( LPMSG lpMsg, HWND hWnd,UINT wMsgFilterMin,UINT wMsgFilterMax);
+BOOL WaitMessage(VOID); /* Bloquea hasta que haya un mensaje */
+
+HINSTANCE LoadLibrary( LPCTSTR lpLibFileName);
+HMODULE GetModuleHandle( LPCTSTR lpModuleName);
+FARPROC GetProcAddress( HMODULE hModule, LPCSTR lpProcName);
+BOOL FreeLibrary( HMODULE hLibModule);
+
+BOOL APIENTRY DllMain( HANDLE hModule, DWORD  ul_reason_for_call, 
+                       LPVOID lpReserved)
+   {switch (ul_reason_for_call)
+       {case DLL_PROCESS_ATTACH:
+        case DLL_THREAD_ATTACH:
+        case DLL_THREAD_DETACH:
+        case DLL_PROCESS_DETACH:
+		break;}
+    return TRUE;}
+
+extern "C" __declspec(dllexport) tipo funciOn(tipo, tipo,...);
+
+HANDLE GetStdHandle( DWORD nStdHandle);
+      Puede ser el parámetro: STD_INPUT_HANDLE, STD_OUTPUT_HANDLE ó 
+                              STD_ERROR_HANDLE.
+BOOL SetStdHandle( DWORD nStdHandle, HANDLE hHandle);
+
+--- 
+char * armarMensaje_Asignar( char * operacion, int pid, int refMemoria, int nroLinea,  char * valorLinea)
+{
+	// Ej: C040000000089000000000000000000010000000033abrir /scripts/simple.escriptorio
+		char *serializa_Asignar = strdup(operacion);
+		char * str_pid=string_itoa(pid);
+		int size_payload_pid = string_length(str_pid);
+		char *completar_pid = string_repeat('0', 10 - size_payload_pid);
+		char * str_refMemoria=string_itoa(refMemoria);
+		int size_payload_refMemoria = string_length(str_refMemoria);
+		char *completar_refMemoria = string_repeat('0', 10 - size_payload_refMemoria);
+		char * str_nroLinea=string_itoa(nroLinea);
+		int size_payload_nroLinea = string_length(str_nroLinea);
+		char *completar_nroLinea = string_repeat('0', 10 - size_payload_nroLinea);
+		char *str_largoLinea = string_itoa(string_length(valorLinea));
+		int size_payload_largoLinea = string_length(str_largoLinea);
+		char *completar_1argoLinea = string_repeat('0', 10 - size_payload_largoLinea);
+
+		string_append(&serializa_Asignar, completar_pid);
+		string_append(&serializa_Asignar, str_pid);
+		string_append(&serializa_Asignar, completar_refMemoria);
+		string_append(&serializa_Asignar, str_refMemoria);
+		string_append(&serializa_Asignar, completar_nroLinea);
+		string_append(&serializa_Asignar, str_nroLinea);
+		string_append(&serializa_Asignar, completar_1argoLinea);
+		string_append(&serializa_Asignar, str_largoLinea);
+		string_append(&serializa_Asignar, valorLinea);
+
+		free(completar_pid);
+		free(str_pid);
+		free(completar_refMemoria);
+		free(str_refMemoria);
+		free(completar_nroLinea);
+		free(str_nroLinea);
+		free(completar_1argoLinea);
+		free(str_largoLinea);
+
+		return serializa_Asignar;
+}
+
+---

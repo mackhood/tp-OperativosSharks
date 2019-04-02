@@ -1,0 +1,14 @@
+[INFO] 12:28:03:581 FM9/(29233:29233): Se crea el archivo de log
+[INFO] 12:28:03:822 FM9/(29233:29233): Se inicia Servidor de Memoria - FM9
+[INFO] 12:28:03:831 FM9/(29233:29233): Se inicia Servidor de Memoria FM9 en Socket: 4 
+[INFO] 12:28:03:844 FM9/(29233:29233): Se crea Memoria de Tamanio: 8192 Bytes
+[INFO] 12:28:32:577 FM9/(29233:29233): FM9 - Nueva conexion aceptada para socket: 5
+[INFO] 12:28:32:579 FM9/(29233:29233): FM9 - Conexión entrante en Socket: 5 
+[INFO] 12:28:32:847 FM9/(29233:29233): El Cliente 5 tiene Hilo nro :0 
+[INFO] 12:38:20:261 FM9/(29495:29495): Se crea el archivo de log
+[INFO] 12:38:20:574 FM9/(29495:29495): Se inicia Servidor de Memoria - FM9
+[INFO] 12:38:20:578 FM9/(29495:29495): Se inicia Servidor de Memoria FM9 en Socket: 4 
+[INFO] 12:38:20:595 FM9/(29495:29495): Se crea Memoria de Tamanio: 8192 Bytes
+[INFO] 12:38:41:772 FM9/(29495:29495): FM9 - Nueva conexion aceptada para socket: 5
+[INFO] 12:38:41:774 FM9/(29495:29495): FM9 - Conexión entrante en Socket: 5 
+[INFO] 12:38:42:38 FM9/(29495:29495): El Cliente 5 tiene Hilo nro :0 
